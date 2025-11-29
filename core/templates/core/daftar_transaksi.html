@@ -3,65 +3,65 @@
 {% block title %}Daftar Transaksi Laundry - Money Laundry{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4 md:space-y-6">
     <!-- Header Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-        <h1 class="text-2xl font-bold text-slate-900">Daftar Transaksi Laundry</h1>
-        <p class="text-slate-600 mt-1 text-sm">Kelola dan pantau semua transaksi laundry</p>
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 md:p-6">
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900">Daftar Transaksi</h1>
+        <p class="text-slate-600 mt-1 text-xs md:text-sm">Kelola dan pantau semua transaksi laundry</p>
     </div>
     
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="card bg-blue-50 border-blue-100 p-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div class="card bg-blue-50 border-blue-100 p-3 md:p-4">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs text-blue-600 mb-1 font-medium">Total Transaksi</p>
-                    <p class="text-2xl font-bold text-blue-700">{{ total_transaksi }}</p>
+                    <p class="text-lg md:text-2xl font-bold text-blue-700">{{ total_transaksi }}</p>
                 </div>
-                <div class="bg-blue-100 rounded-full p-2.5">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-blue-100 rounded-full p-2 md:p-2.5 hidden sm:block">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
                 </div>
             </div>
         </div>
         
-        <div class="card bg-emerald-50 border-emerald-100 p-4">
+        <div class="card bg-emerald-50 border-emerald-100 p-3 md:p-4">
             <div class="flex items-center justify-between">
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs text-emerald-600 mb-1 font-medium">Total Pendapatan</p>
-                    <p class="text-2xl font-bold text-emerald-700">Rp {{ total_pendapatan|floatformat:0 }}</p>
+                    <p class="text-base md:text-2xl font-bold text-emerald-700 truncate">Rp {{ total_pendapatan|floatformat:0 }}</p>
                 </div>
-                <div class="bg-emerald-100 rounded-full p-2.5">
-                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-emerald-100 rounded-full p-2 md:p-2.5 hidden sm:block">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
             </div>
         </div>
         
-        <div class="card bg-purple-50 border-purple-100 p-4">
+        <div class="card bg-purple-50 border-purple-100 p-3 md:p-4">
             <div class="flex items-center justify-between">
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs text-purple-600 mb-1 font-medium">Sudah Lunas</p>
-                    <p class="text-2xl font-bold text-purple-700">Rp {{ total_lunas|floatformat:0 }}</p>
+                    <p class="text-base md:text-2xl font-bold text-purple-700 truncate">Rp {{ total_lunas|floatformat:0 }}</p>
                 </div>
-                <div class="bg-purple-100 rounded-full p-2.5">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-purple-100 rounded-full p-2 md:p-2.5 hidden sm:block">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
             </div>
         </div>
         
-        <div class="card bg-amber-50 border-amber-100 p-4">
+        <div class="card bg-amber-50 border-amber-100 p-3 md:p-4">
             <div class="flex items-center justify-between">
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs text-amber-600 mb-1 font-medium">Belum Lunas</p>
-                    <p class="text-2xl font-bold text-amber-700">Rp {{ total_belum_lunas|floatformat:0 }}</p>
+                    <p class="text-base md:text-2xl font-bold text-amber-700 truncate">Rp {{ total_belum_lunas|floatformat:0 }}</p>
                 </div>
-                <div class="bg-amber-100 rounded-full p-2.5">
-                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-amber-100 rounded-full p-2 md:p-2.5 hidden sm:block">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -70,7 +70,7 @@
     </div>
     
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
         <div class="card p-4">
             <h3 class="text-sm font-semibold text-slate-900 mb-3 flex items-center">
                 <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,55 +98,55 @@
     
     <!-- Filter Section -->
     <div class="card">
-        <button type="button" id="filter-toggle" class="w-full border-b border-slate-200 px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors duration-200">
-            <span class="text-lg font-semibold text-slate-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" id="filter-toggle" class="w-full border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between hover:bg-slate-50 transition-colors duration-200">
+            <span class="text-base md:text-lg font-semibold text-slate-900 flex items-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                 </svg>
-                Filter Transaksi
+                Filter
             </span>
             <svg id="filter-icon" class="w-5 h-5 text-slate-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
         <div id="filter-content" class="overflow-hidden transition-all duration-300">
-            <div class="p-6">
-                <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="form-label">Tanggal Dari</label>
-                    <input type="date" name="tanggal_dari" value="{{ tanggal_dari|default:'' }}" class="form-input">
+            <div class="p-4 md:p-6">
+                <form method="get" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="col-span-2 md:col-span-1">
+                    <label class="form-label text-xs md:text-sm">Tanggal</label>
+                    <input type="date" name="tanggal_dari" value="{{ tanggal_dari|default:'' }}" class="form-input text-sm">
                 </div>
                 
                 <div>
-                    <label class="form-label">Kategori Layanan</label>
-                    <select name="layanan" class="form-input">
-                        <option value="">Semua Layanan</option>{% for layanan in all_layanan %}<option value="{{ layanan.id }}" {% if layanan_filter == layanan.id|stringformat:"s" %}selected{% endif %}>{{ layanan.nama_layanan }}</option>{% endfor %}
+                    <label class="form-label text-xs md:text-sm">Layanan</label>
+                    <select name="layanan" class="form-input text-sm">
+                        <option value="">Semua</option>{% for layanan in all_layanan %}<option value="{{ layanan.id }}" {% if layanan_filter == layanan.id|stringformat:"s" %}selected{% endif %}>{{ layanan.nama_layanan }}</option>{% endfor %}
                     </select>
                 </div>
                 
                 <div>
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-input">
-                        <option value="">Semua Status</option><option value="Diterima" {% if status_filter == 'Diterima' %}selected{% endif %}>Diterima</option><option value="Proses" {% if status_filter == 'Proses' %}selected{% endif %}>Proses</option><option value="Selesai" {% if status_filter == 'Selesai' %}selected{% endif %}>Selesai</option><option value="Diambil" {% if status_filter == 'Diambil' %}selected{% endif %}>Diambil</option>
+                    <label class="form-label text-xs md:text-sm">Status</label>
+                    <select name="status" class="form-input text-sm">
+                        <option value="">Semua</option><option value="Diterima" {% if status_filter == 'Diterima' %}selected{% endif %}>Diterima</option><option value="Proses" {% if status_filter == 'Proses' %}selected{% endif %}>Proses</option><option value="Selesai" {% if status_filter == 'Selesai' %}selected{% endif %}>Selesai</option><option value="Diambil" {% if status_filter == 'Diambil' %}selected{% endif %}>Diambil</option>
                     </select>
                 </div>
                 
                 <div>
-                    <label class="form-label">Status Pembayaran</label>
-                    <select name="pembayaran" class="form-input">
-                        <option value="">Semua Pembayaran</option><option value="Belum Lunas" {% if pembayaran_filter == 'Belum Lunas' %}selected{% endif %}>Belum Lunas</option><option value="Lunas" {% if pembayaran_filter == 'Lunas' %}selected{% endif %}>Lunas</option>
+                    <label class="form-label text-xs md:text-sm">Pembayaran</label>
+                    <select name="pembayaran" class="form-input text-sm">
+                        <option value="">Semua</option><option value="Belum Lunas" {% if pembayaran_filter == 'Belum Lunas' %}selected{% endif %}>Belum Lunas</option><option value="Lunas" {% if pembayaran_filter == 'Lunas' %}selected{% endif %}>Lunas</option>
                     </select>
                 </div>
                 
-                <div class="flex items-end gap-3">
-                    <button type="submit" class="flex-1 btn-primary justify-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="col-span-2 md:col-span-1 flex items-end gap-2">
+                    <button type="submit" class="flex-1 btn-primary justify-center text-sm py-2">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Filter
                     </button>
-                    <a href="{% url 'daftar_transaksi' %}" class="flex-1 btn-secondary justify-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'daftar_transaksi' %}" class="flex-1 btn-secondary justify-center text-sm py-2">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                         Reset
@@ -159,9 +159,9 @@
     
     <!-- Table Section -->
     <div class="card p-0 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-            <h2 class="text-lg font-semibold text-slate-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+            <h2 class="text-base md:text-lg font-semibold text-slate-900 flex items-center">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
                 Daftar Transaksi
@@ -169,56 +169,44 @@
         </div>
         
         <div class="overflow-x-auto">
-                <table class="table-custom">
+                <table class="table-custom min-w-[800px]">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="table-header">No</th>
-                            <th class="table-header">Tanggal</th>
-                            <th class="table-header">Nomor Order</th>
-                            <th class="table-header">Nama Pelanggan</th>
-                            <th class="table-header">Layanan</th>
-                            <th class="table-header">Total Biaya</th>
-                            <th class="table-header">Status</th>
-                            <th class="table-header">Pembayaran</th>
-                            <th class="table-header no-print">Aksi</th>
+                            <th class="table-header text-xs">No</th>
+                            <th class="table-header text-xs">Tanggal</th>
+                            <th class="table-header text-xs">No. Order</th>
+                            <th class="table-header text-xs">Pelanggan</th>
+                            <th class="table-header text-xs">Layanan</th>
+                            <th class="table-header text-xs">Total</th>
+                            <th class="table-header text-xs">Status</th>
+                            <th class="table-header text-xs">Bayar</th>
+                            <th class="table-header text-xs no-print">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-slate-200">{% for transaksi in page_obj %}<tr class="table-row">
-                            <td class="table-cell">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
-                            <td class="table-cell">{{ transaksi.tanggal_masuk|date:"d/m/Y H:i" }}</td>
-                            <td class="table-cell font-medium">{{ transaksi.nomor_order }}</td>
-                            <td class="table-cell">{{ transaksi.id_pelanggan.nama_pelanggan }}</td>
-                            <td class="table-cell">{{ transaksi.jenis_layanan.nama_layanan }}</td>
-                            <td class="table-cell">Rp {{ transaksi.total_biaya|floatformat:0 }}</td>
+                            <td class="table-cell text-xs md:text-sm">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                            <td class="table-cell text-xs md:text-sm whitespace-nowrap">{{ transaksi.tanggal_masuk|date:"d/m/Y" }}</td>
+                            <td class="table-cell text-xs md:text-sm font-medium">{{ transaksi.nomor_order }}</td>
+                            <td class="table-cell text-xs md:text-sm">{{ transaksi.id_pelanggan.nama_pelanggan }}</td>
+                            <td class="table-cell text-xs md:text-sm">{{ transaksi.jenis_layanan.nama_layanan }}</td>
+                            <td class="table-cell text-xs md:text-sm whitespace-nowrap">Rp {{ transaksi.total_biaya|floatformat:0 }}</td>
                             <td class="table-cell">
-                                <span class="
-                                    {% if transaksi.status == 'Diterima' %}badge-diterima
-                                    {% elif transaksi.status == 'Proses' %}badge-proses
-                                    {% elif transaksi.status == 'Selesai' %}badge-selesai
-                                    {% elif transaksi.status == 'Diambil' %}badge-diambil
-                                    {% endif %}">
-                                    {{ transaksi.status }}
-                                </span>
+                                <span class="text-xs {% if transaksi.status == 'Diterima' %}badge-diterima{% elif transaksi.status == 'Proses' %}badge-proses{% elif transaksi.status == 'Selesai' %}badge-selesai{% elif transaksi.status == 'Diambil' %}badge-diambil{% endif %}">{{ transaksi.status }}</span>
                             </td>
                             <td class="table-cell">
-                                <span class="
-                                    {% if transaksi.status_pembayaran == 'Lunas' %}badge-lunas
-                                    {% else %}badge-belum-lunas
-                                    {% endif %}">
-                                    {{ transaksi.status_pembayaran }}
-                                </span>
+                                <span class="text-xs {% if transaksi.status_pembayaran == 'Lunas' %}badge-lunas{% else %}badge-belum-lunas{% endif %}">{{ transaksi.status_pembayaran }}</span>
                             </td>
                             <td class="table-cell no-print">
-                                <a href="{% url 'detail_transaksi' transaksi.id %}" class="text-blue-600 hover:text-blue-900 font-medium hover:underline">Detail</a>
+                                <a href="{% url 'detail_transaksi' transaksi.id %}" class="text-xs md:text-sm text-blue-600 hover:text-blue-900 font-medium hover:underline">Detail</a>
                             </td>
                         </tr>{% empty %}<tr>
-                            <td colspan="9" class="px-6 py-8 text-center text-slate-500">
+                            <td colspan="9" class="px-4 md:px-6 py-6 md:py-8 text-center text-slate-500">
                                 <div class="flex flex-col items-center justify-center">
-                                    <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-10 h-10 md:w-12 md:h-12 text-slate-300 mb-2 md:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                     </svg>
-                                    <p class="text-lg font-medium text-slate-900">Belum ada transaksi</p>
-                                    <p class="text-slate-500">Transaksi yang Anda buat akan muncul di sini</p>
+                                    <p class="text-sm md:text-lg font-medium text-slate-900">Belum ada transaksi</p>
+                                    <p class="text-xs md:text-sm text-slate-500">Transaksi akan muncul di sini</p>
                                 </div>
                             </td>
                         </tr>{% endfor %}</tbody>
@@ -227,31 +215,31 @@
             
             <!-- Pagination -->
             {% if page_obj.has_other_pages %}
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                <div class="text-sm text-slate-700">
-                    Menampilkan <span class="font-medium">{{ page_obj.start_index }}</span> sampai <span class="font-medium">{{ page_obj.end_index }}</span> dari <span class="font-medium">{{ page_obj.paginator.count }}</span> transaksi
+            <div class="px-4 md:px-6 py-3 md:py-4 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="text-xs md:text-sm text-slate-700 text-center md:text-left">
+                    <span class="font-medium">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> dari <span class="font-medium">{{ page_obj.paginator.count }}</span>
                 </div>
                 
-                <div class="flex gap-2">
+                <div class="flex flex-wrap justify-center gap-1 md:gap-2">
                     {% if page_obj.has_previous %}
-                    <a href="?page=1{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
-                        &laquo; Pertama
+                    <a href="?page=1{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-2 md:px-3 py-1.5 md:py-2 border border-slate-300 rounded-lg text-xs md:text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
+                        &laquo;
                     </a>
-                    <a href="?page={{ page_obj.previous_page_number }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
-                        &lsaquo; Sebelumnya
+                    <a href="?page={{ page_obj.previous_page_number }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-2 md:px-3 py-1.5 md:py-2 border border-slate-300 rounded-lg text-xs md:text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
+                        &lsaquo;
                     </a>
                     {% endif %}
                     
-                    <span class="px-3 py-2 border border-blue-500 rounded-lg text-sm font-medium text-blue-600 bg-blue-50">
-                        Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}
+                    <span class="px-2 md:px-3 py-1.5 md:py-2 border border-blue-500 rounded-lg text-xs md:text-sm font-medium text-blue-600 bg-blue-50">
+                        {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
                     </span>
                     
                     {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
-                        Selanjutnya &rsaquo;
+                    <a href="?page={{ page_obj.next_page_number }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-2 md:px-3 py-1.5 md:py-2 border border-slate-300 rounded-lg text-xs md:text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
+                        &rsaquo;
                     </a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
-                        Terakhir &raquo;
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if tanggal_dari %}&tanggal_dari={{ tanggal_dari }}{% endif %}{% if layanan_filter %}&layanan={{ layanan_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pembayaran_filter %}&pembayaran={{ pembayaran_filter }}{% endif %}" class="px-2 md:px-3 py-1.5 md:py-2 border border-slate-300 rounded-lg text-xs md:text-sm font-medium text-slate-700 bg-white hover:bg-slate-50">
+                        &raquo;
                     </a>
                     {% endif %}
                 </div>
