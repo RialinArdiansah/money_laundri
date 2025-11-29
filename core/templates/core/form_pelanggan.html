@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Pelanggan - Money Laundry{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900">{% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Pelanggan</h1>
+                <p class="text-slate-600 mt-2">{% if mode == 'tambah' %}Tambahkan pelanggan baru ke database{% else %}Ubah informasi pelanggan{% endif %}</p>
+            </div>
+            <a href="{% url 'kelola_pelanggan' %}" class="btn-secondary flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali
+            </a>
+        </div>
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <div>
+                        <label for="{{ form.nama_pelanggan.id_for_label }}" class="form-label">
+                            Nama Lengkap <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.nama_pelanggan }}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.nomor_handphone.id_for_label }}" class="form-label">
+                            Nomor Handphone <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.nomor_handphone }}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.alamat.id_for_label }}" class="form-label">
+                            Alamat
+                        </label>
+                        {{ form.alamat }}
+                    </div>
+                    
+                    <div class="flex gap-4 pt-4 border-t border-slate-100">
+                        <button type="submit" class="btn-primary flex-1 md:flex-none md:w-48">
+                            Simpan
+                        </button>
+                        <a href="{% url 'kelola_pelanggan' %}" class="btn-secondary flex-1 md:flex-none md:w-32">
+                            Batal
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Auto-apply form-input class to Django form fields if not already present
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-input')) {
+                input.classList.add('form-input');
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

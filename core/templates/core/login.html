@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Login - Money Laundry{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full card shadow-2xl p-8 border-t-4 border-blue-600">
+        <div class="text-center mb-8">
+            <div class="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-900">Selamat Datang</h2>
+            <p class="mt-2 text-sm text-slate-600">Silakan masuk ke akun Anda</p>
+        </div>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    Username
+                </label>
+                {{ form.username }}
+            </div>
+            
+            <div>
+                <label for="{{ form.password.id_for_label }}" class="form-label">
+                    Password
+                </label>
+                {{ form.password }}
+            </div>
+            
+            <div>
+                <button type="submit" class="w-full btn-primary justify-center">
+                    Masuk
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <a href="{% url 'halaman_utama' %}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-all">
+                &larr; Kembali ke Halaman Utama
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
