@@ -1,18 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Pengguna, Pelanggan, Layanan, Transaksi, LogHistory
+from .models import Akun, Karyawan, Pelanggan, Layanan, Transaksi, LogHistory
 
 
-@admin.register(Pengguna)
-class PenggunaAdmin(UserAdmin):
-    list_display = ['username', 'nama', 'peran', 'is_active', 'date_joined']
+@admin.register(Akun)
+class AkunAdmin(UserAdmin):
+    list_display = ['username', 'peran', 'is_active', 'date_joined']
     list_filter = ['peran', 'is_active', 'date_joined']
-    search_fields = ['username', 'nama']
+    search_fields = ['username']
     ordering = ['-date_joined']
     
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Informasi Personal', {'fields': ('nama',)}),
         ('Peran', {'fields': ('peran',)}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Tanggal Penting', {'fields': ('last_login', 'date_joined')}),
@@ -21,9 +20,16 @@ class PenggunaAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'nama', 'peran', 'password1', 'password2'),
+            'fields': ('username', 'peran', 'password1', 'password2'),
         }),
     )
+
+
+@admin.register(Karyawan)
+class KaryawanAdmin(admin.ModelAdmin):
+    list_display = ['nama', 'nomor_hp', 'akun', 'alamat']
+    search_fields = ['nama', 'nomor_hp']
+    list_filter = ['akun__peran']
 
 
 admin.site.register(Pelanggan)

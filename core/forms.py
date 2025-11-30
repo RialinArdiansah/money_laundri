@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Pengguna, Pelanggan, Transaksi, Layanan
+from .models import Akun, Karyawan, Pelanggan, Transaksi, Layanan
 from datetime import date, timedelta
 
 
@@ -72,6 +72,13 @@ class PelangganForm(forms.ModelForm):
 
 
 class KaryawanForm(forms.ModelForm):
+    username = forms.CharField(
+        label='Username',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan username untuk login'
+        })
+    )
     password = forms.CharField(
         label='Password',
         required=False,
@@ -80,68 +87,93 @@ class KaryawanForm(forms.ModelForm):
             'placeholder': 'Masukkan password (minimal 6 karakter)'
         })
     )
+    peran = forms.ChoiceField(
+        label='Jabatan',
+        choices=Akun.PERAN_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+        })
+    )
     
     class Meta:
-        model = Pengguna
-        fields = ['nama', 'username', 'password', 'nomor_handphone', 'peran']
+        model = Karyawan
+        fields = ['nama', 'alamat', 'nomor_hp']
         labels = {
             'nama': 'Nama',
-            'username': 'Username',
-            'nomor_handphone': 'Nomor Handphone',
-            'peran': 'Jabatan',
+            'alamat': 'Alamat',
+            'nomor_hp': 'Nomor HP',
         }
         widgets = {
             'nama': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Masukkan nama'
+                'placeholder': 'Masukkan nama lengkap'
             }),
-            'username': forms.TextInput(attrs={
+            'alamat': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Masukkan username'
+                'placeholder': 'Masukkan alamat',
+                'rows': 3
             }),
-            'nomor_handphone': forms.TextInput(attrs={
+            'nomor_hp': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Masukkan nomor handphone'
-            }),
-            'peran': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                'placeholder': 'Masukkan nomor HP'
             }),
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and self.instance.akun:
+            self.fields['username'].initial = self.instance.akun.username
+            self.fields['peran'].initial = self.instance.akun.peran
+    
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        if self.instance.pk:
-            if Pengguna.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
+        akun_id = self.instance.akun.id if self.instance.pk and self.instance.akun else None
+        if akun_id:
+            if Akun.objects.exclude(pk=akun_id).filter(username=username).exists():
                 raise forms.ValidationError('Username sudah digunakan')
         else:
-            if Pengguna.objects.filter(username=username).exists():
+            if Akun.objects.filter(username=username).exists():
                 raise forms.ValidationError('Username sudah digunakan')
         return username
     
     def clean_password(self):
         password = self.cleaned_data.get('password')
         if not self.instance.pk and not password:
-            raise forms.ValidationError('Password harus diisi untuk pegawai baru')
+            raise forms.ValidationError('Password harus diisi untuk karyawan baru')
         if password and len(password) < 6:
             raise forms.ValidationError('Password minimal 6 karakter')
         return password
     
-    def clean_nomor_handphone(self):
-        nomor = self.cleaned_data.get('nomor_handphone')
+    def clean_nomor_hp(self):
+        nomor = self.cleaned_data.get('nomor_hp')
         if not nomor.isdigit():
-            raise forms.ValidationError('Nomor handphone hanya boleh angka')
+            raise forms.ValidationError('Nomor HP hanya boleh angka')
         if len(nomor) < 10 or len(nomor) > 13:
-            raise forms.ValidationError('Nomor handphone harus 10-13 digit')
+            raise forms.ValidationError('Nomor HP harus 10-13 digit')
         return nomor
     
     def save(self, commit=True):
-        user = super().save(commit=False)
+        karyawan = super().save(commit=False)
+        username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
-        if password:
-            user.set_password(password)
+        peran = self.cleaned_data.get('peran')
+        
+        if self.instance.pk and self.instance.akun:
+            akun = self.instance.akun
+            akun.username = username
+            akun.peran = peran
+            if password:
+                akun.set_password(password)
+            akun.save()
+        else:
+            akun = Akun(username=username, peran=peran)
+            akun.set_password(password)
+            akun.save()
+            karyawan.akun = akun
+        
         if commit:
-            user.save()
-        return user
+            karyawan.save()
+        return karyawan
 
 
 class TransaksiForm(forms.ModelForm):

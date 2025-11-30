@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 
-from .models import Pengguna, Pelanggan, Layanan, Transaksi, LogHistory
+from .models import Akun, Karyawan, Pelanggan, Layanan, Transaksi, LogHistory
 from .forms import LoginForm, PelangganForm, KaryawanForm, TransaksiForm, UpdateStatusForm, CekStatusForm
 
 
@@ -16,8 +16,8 @@ def is_owner(user):
     return user.is_authenticated and user.peran == 'Owner'
 
 
-def is_pegawai_or_owner(user):
-    return user.is_authenticated and user.peran in ['Pegawai', 'Owner']
+def is_karyawan_or_owner(user):
+    return user.is_authenticated and user.peran in ['Karyawan', 'Owner']
 
 
 def halaman_utama(request):
@@ -105,7 +105,7 @@ def dashboard(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def order_laundry(request):
     if request.method == 'POST':
         form = TransaksiForm(request.POST)
@@ -146,7 +146,7 @@ def order_laundry(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def tambah_pelanggan_ajax(request):
     if request.method == 'POST':
         form = PelangganForm(request.POST)
@@ -174,7 +174,7 @@ def tambah_pelanggan_ajax(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def search_pelanggan(request):
     query = request.GET.get('q', '')
     if query:
@@ -187,7 +187,7 @@ def search_pelanggan(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def get_layanan_harga(request, layanan_id):
     try:
         layanan = Layanan.objects.get(id=layanan_id)
@@ -225,7 +225,7 @@ def cek_status_laundry(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def kelola_pelanggan(request):
     pelanggan_list = Pelanggan.objects.all().order_by('-tanggal_registrasi')
     context = {
@@ -235,7 +235,7 @@ def kelola_pelanggan(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def tambah_pelanggan(request):
     if request.method == 'POST':
         form = PelangganForm(request.POST)
@@ -255,7 +255,7 @@ def tambah_pelanggan(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def edit_pelanggan(request, pelanggan_id):
     pelanggan = get_object_or_404(Pelanggan, id=pelanggan_id)
     if request.method == 'POST':
@@ -276,7 +276,7 @@ def edit_pelanggan(request, pelanggan_id):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def hapus_pelanggan(request, pelanggan_id):
     pelanggan = get_object_or_404(Pelanggan, id=pelanggan_id)
     if request.method == 'POST':
@@ -288,7 +288,7 @@ def hapus_pelanggan(request, pelanggan_id):
 @login_required
 @user_passes_test(is_owner)
 def kelola_karyawan(request):
-    karyawan_list = Pengguna.objects.filter(peran__in=['Pegawai', 'Owner']).order_by('-date_joined')
+    karyawan_list = Karyawan.objects.select_related('akun').all()
     context = {
         'karyawan_list': karyawan_list,
     }
@@ -318,12 +318,12 @@ def tambah_karyawan(request):
 @login_required
 @user_passes_test(is_owner)
 def edit_karyawan(request, karyawan_id):
-    karyawan = get_object_or_404(Pengguna, id=karyawan_id)
+    karyawan = get_object_or_404(Karyawan, id=karyawan_id)
     if request.method == 'POST':
         form = KaryawanForm(request.POST, instance=karyawan)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Data pegawai berhasil diperbarui.')
+            messages.success(request, 'Data karyawan berhasil diperbarui.')
             return redirect('kelola_karyawan')
         else:
             for field, errors in form.errors.items():
@@ -339,15 +339,17 @@ def edit_karyawan(request, karyawan_id):
 @login_required
 @user_passes_test(is_owner)
 def hapus_karyawan(request, karyawan_id):
-    karyawan = get_object_or_404(Pengguna, id=karyawan_id)
+    karyawan = get_object_or_404(Karyawan, id=karyawan_id)
     if request.method == 'POST':
+        if karyawan.akun:
+            karyawan.akun.delete()
         karyawan.delete()
-        messages.success(request, 'Data pegawai berhasil dihapus.')
+        messages.success(request, 'Data karyawan berhasil dihapus.')
     return redirect('kelola_karyawan')
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def daftar_transaksi(request):
     from django.core.paginator import Paginator
     from django.db.models import Count
@@ -438,7 +440,7 @@ def daftar_transaksi(request):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def detail_transaksi(request, transaksi_id):
     transaksi = get_object_or_404(Transaksi, id=transaksi_id)
     log_history = LogHistory.objects.filter(id_transaksi=transaksi).order_by('-waktu_perubahan')
@@ -450,7 +452,7 @@ def detail_transaksi(request, transaksi_id):
     return render(request, 'core/detail_transaksi.html', context)
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def update_status(request, transaksi_id):
     transaksi = get_object_or_404(Transaksi, id=transaksi_id)
     
@@ -484,7 +486,7 @@ def update_status(request, transaksi_id):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def koreksi_status(request, transaksi_id):
     transaksi = get_object_or_404(Transaksi, id=transaksi_id)
     
@@ -519,7 +521,7 @@ def koreksi_status(request, transaksi_id):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def update_pembayaran(request, transaksi_id):
     transaksi = get_object_or_404(Transaksi, id=transaksi_id)
     
@@ -532,7 +534,7 @@ def update_pembayaran(request, transaksi_id):
 
 
 @login_required
-@user_passes_test(is_pegawai_or_owner)
+@user_passes_test(is_karyawan_or_owner)
 def cetak_nota(request, transaksi_id):
     transaksi = get_object_or_404(Transaksi, id=transaksi_id)
     context = {

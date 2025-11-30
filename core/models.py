@@ -4,25 +4,38 @@ from django.utils import timezone
 from datetime import timedelta
 
 
-class Pengguna(AbstractUser):
+class Akun(AbstractUser):
     PERAN_CHOICES = [
-        ('Pegawai', 'Pegawai'),
+        ('Karyawan', 'Karyawan'),
         ('Owner', 'Owner'),
     ]
-    nama = models.CharField(max_length=200, default='')
-    nomor_handphone = models.CharField(max_length=15, default='0')
-    peran = models.CharField(max_length=20, choices=PERAN_CHOICES, default='Pegawai')
+    peran = models.CharField(max_length=20, choices=PERAN_CHOICES, default='Karyawan')
     email = None
     first_name = None
     last_name = None
     
     class Meta:
-        db_table = 'tb_pengguna'
-        verbose_name = 'Pengguna'
-        verbose_name_plural = 'Pengguna'
+        db_table = 'tb_akun'
+        verbose_name = 'Akun'
+        verbose_name_plural = 'Akun'
     
     def __str__(self):
-        return f"{self.nama} ({self.peran})"
+        return f"{self.username} ({self.peran})"
+
+
+class Karyawan(models.Model):
+    akun = models.OneToOneField(Akun, on_delete=models.CASCADE, related_name='karyawan', null=True, blank=True)
+    nama = models.CharField(max_length=200)
+    alamat = models.TextField(blank=True, null=True)
+    nomor_hp = models.CharField(max_length=15)
+    
+    class Meta:
+        db_table = 'tb_karyawan'
+        verbose_name = 'Karyawan'
+        verbose_name_plural = 'Karyawan'
+    
+    def __str__(self):
+        return self.nama
 
 
 class Pelanggan(models.Model):
@@ -69,7 +82,7 @@ class Transaksi(models.Model):
     
     nomor_order = models.CharField(max_length=50, unique=True)
     id_pelanggan = models.ForeignKey(Pelanggan, on_delete=models.CASCADE, related_name='transaksi')
-    id_pegawai = models.ForeignKey(Pengguna, on_delete=models.SET_NULL, null=True, related_name='transaksi')
+    id_pegawai = models.ForeignKey(Akun, on_delete=models.SET_NULL, null=True, related_name='transaksi')
     jenis_layanan = models.ForeignKey(Layanan, on_delete=models.CASCADE, related_name='transaksi')
     berat_cucian = models.DecimalField(max_digits=6, decimal_places=2)
     total_biaya = models.DecimalField(max_digits=12, decimal_places=2)
@@ -112,7 +125,7 @@ class LogHistory(models.Model):
     status_sebelum = models.CharField(max_length=20)
     status_sesudah = models.CharField(max_length=20)
     waktu_perubahan = models.DateTimeField(auto_now_add=True)
-    id_pegawai = models.ForeignKey(Pengguna, on_delete=models.SET_NULL, null=True, related_name='log_history')
+    id_pegawai = models.ForeignKey(Akun, on_delete=models.SET_NULL, null=True, related_name='log_history')
     keterangan = models.TextField(blank=True, null=True)
     
     class Meta:
