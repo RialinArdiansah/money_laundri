@@ -1,10 +1,25 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils import timezone
 from datetime import timedelta
 
 
 class Akun(AbstractUser):
+    class AkunManager(UserManager):
+        def _create_user(self, username, email, password, **extra_fields):
+            user = self.model(username=username, **extra_fields)
+            user.set_password(password)
+            user.save(using=self._db)
+            return user
+        
+        def create_superuser(self, username, email=None, password=None, **extra_fields):
+            extra_fields.setdefault('is_staff', True)
+            extra_fields.setdefault('is_superuser', True)
+            extra_fields.setdefault('peran', 'Owner')
+            return self._create_user(username, None, password, **extra_fields)
+    
+    objects = AkunManager()
+    
     PERAN_CHOICES = [
         ('Karyawan', 'Karyawan'),
         ('Owner', 'Owner'),
@@ -13,6 +28,8 @@ class Akun(AbstractUser):
     email = None
     first_name = None
     last_name = None
+    
+    REQUIRED_FIELDS = []
     
     class Meta:
         db_table = 'tb_akun'
