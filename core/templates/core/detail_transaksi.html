@@ -260,9 +260,26 @@
             </div>
 
             <!-- Status Actions -->
-            {% if transaksi.status != 'Sudah Diambil' %}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Update Status</h3>
+                
+                <!-- Alert untuk status final -->
+                <div id="alert-final-status" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-red-800">Transaksi sudah selesai. Hubungi Owner untuk pembatalan.</p>
+                        </div>
+                        <button type="button" onclick="document.getElementById('alert-final-status').classList.add('hidden')" class="ml-auto text-red-500 hover:text-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="flex flex-col sm:flex-row gap-3">
                     {% if transaksi.status == 'Diterima' %}
                     <form method="post" action="{% url 'update_status' transaksi.id %}" class="flex-1">
@@ -305,9 +322,17 @@
                             Tandai Sudah Diambil
                         </button>
                     </form>
+                    {% elif transaksi.status == 'Sudah Diambil' %}
+                    <!-- Status Final - Tampilkan info -->
+                    <div class="flex-1 inline-flex justify-center items-center px-4 py-3 border border-gray-200 shadow-sm text-sm font-medium rounded-lg text-gray-400 bg-gray-50 cursor-not-allowed">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        Status Final - Transaksi Selesai
+                    </div>
                     {% endif %}
 
-                    {% if transaksi.status in 'Proses,Selesai' %}
+                    {% if transaksi.status == 'Proses' or transaksi.status == 'Selesai' %}
                     <a href="{% url 'koreksi_status' transaksi.id %}"
                         class="inline-flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,10 +341,19 @@
                         </svg>
                         Koreksi Status
                     </a>
+                    {% elif transaksi.status == 'Sudah Diambil' %}
+                    <!-- Button koreksi untuk status final - tampilkan pesan error -->
+                    <button type="button" id="btn-koreksi-final"
+                        class="inline-flex justify-center items-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                        Koreksi Status
+                    </button>
                     {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
 
         <!-- Log History Card -->
@@ -367,4 +401,21 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnKoreksiFinal = document.getElementById('btn-koreksi-final');
+    const alertFinalStatus = document.getElementById('alert-final-status');
+    
+    if (btnKoreksiFinal && alertFinalStatus) {
+        btnKoreksiFinal.addEventListener('click', function() {
+            alertFinalStatus.classList.remove('hidden');
+            // Scroll ke alert
+            alertFinalStatus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+});
+</script>
 {% endblock %}

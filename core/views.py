@@ -54,50 +54,51 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     import json
+    from django.db.models import Count, Case, When, IntegerField
+    from django.db.models.functions import TruncDate
     
-    # Statistics Cards Data
-    total_transaksi = Transaksi.objects.count()
-    
-    # Total Pendapatan Keseluruhan
-    total_pendapatan = Transaksi.objects.aggregate(total=Sum('total_biaya'))['total'] or 0
-    
-    # Data Hari Ini
     today = timezone.now().date()
-    transaksi_hari_ini = Transaksi.objects.filter(tanggal_masuk__date=today).count()
-    pendapatan_hari_ini = Transaksi.objects.filter(
-        tanggal_masuk__date=today
-    ).aggregate(total=Sum('total_biaya'))['total'] or 0
+    week_ago = today - timedelta(days=6)
+    
+    # Single query for all statistics using conditional aggregation
+    stats = Transaksi.objects.aggregate(
+        total_transaksi=Count('id'),
+        total_pendapatan=Sum('total_biaya'),
+        transaksi_hari_ini=Count(Case(When(tanggal_masuk__date=today, then=1), output_field=IntegerField())),
+        pendapatan_hari_ini=Sum(Case(When(tanggal_masuk__date=today, then='total_biaya'))),
+        transaksi_aktif=Count(Case(When(~Q(status='Diambil'), then=1), output_field=IntegerField())),
+        belum_lunas=Sum(Case(When(status_pembayaran='Belum Lunas', then='total_biaya'))),
+    )
     
     # Recent Activities - Latest 10 transactions
     recent_activities = Transaksi.objects.select_related(
         'id_pelanggan', 'jenis_layanan'
     ).order_by('-tanggal_masuk')[:10]
     
-    # Additional KPI Data (keeping for potential future use)
-    transaksi_aktif = Transaksi.objects.exclude(status='Diambil').count()
-    belum_lunas = Transaksi.objects.filter(
-        status_pembayaran='Belum Lunas'
-    ).aggregate(total=Sum('total_biaya'))['total'] or 0
+    # Chart Data - Single query with database-level grouping
+    daily_data = Transaksi.objects.filter(
+        tanggal_masuk__date__gte=week_ago
+    ).annotate(
+        day=TruncDate('tanggal_masuk')
+    ).values('day').annotate(
+        count=Count('id')
+    ).order_by('day')
     
-    # Chart Data - Last 7 days transactions
+    # Build chart data with all 7 days (fill missing days with 0)
+    daily_dict = {item['day']: item['count'] for item in daily_data}
     last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    daily_transactions = []
-    
-    for day in last_7_days:
-        count = Transaksi.objects.filter(tanggal_masuk__date=day).count()
-        daily_transactions.append(count)
-    
+    daily_transactions = [daily_dict.get(day, 0) for day in last_7_days]
     chart_labels = [day.strftime('%d %b') for day in last_7_days]
     
     context = {
         'user': request.user,
-        'total_transaksi': total_transaksi,
-        'total_pendapatan': total_pendapatan,
-        'transaksi_hari_ini': transaksi_hari_ini,
-        'pendapatan_hari_ini': pendapatan_hari_ini,
+        'total_transaksi': stats['total_transaksi'] or 0,
+        'total_pendapatan': stats['total_pendapatan'] or 0,
+        'transaksi_hari_ini': stats['transaksi_hari_ini'] or 0,
+        'pendapatan_hari_ini': stats['pendapatan_hari_ini'] or 0,
         'recent_activities': recent_activities,
-        'transaksi_aktif': transaksi_aktif,
-        'belum_lunas': belum_lunas,
+        'transaksi_aktif': stats['transaksi_aktif'] or 0,
+        'belum_lunas': stats['belum_lunas'] or 0,
         'chart_labels': json.dumps(chart_labels),
         'daily_transactions': json.dumps(daily_transactions),
     }
@@ -352,7 +353,8 @@ def hapus_karyawan(request, karyawan_id):
 @user_passes_test(is_karyawan_or_owner)
 def daftar_transaksi(request):
     from django.core.paginator import Paginator
-    from django.db.models import Count
+    from django.db.models import Count, Case, When
+    from django.db.models.functions import TruncDate, TruncMonth
     from datetime import datetime, timedelta
     import json
     
@@ -373,59 +375,66 @@ def daftar_transaksi(request):
     if layanan_filter:
         transaksi_list = transaksi_list.filter(jenis_layanan_id=layanan_filter)
     
-    # Statistics
-    total_transaksi = transaksi_list.count()
-    total_pendapatan = transaksi_list.aggregate(total=Sum('total_biaya'))['total'] or 0
-    total_lunas = transaksi_list.filter(status_pembayaran='Lunas').aggregate(total=Sum('total_biaya'))['total'] or 0
-    total_belum_lunas = transaksi_list.filter(status_pembayaran='Belum Lunas').aggregate(total=Sum('total_biaya'))['total'] or 0
+    # Statistics - Single query with conditional aggregation
+    stats = transaksi_list.aggregate(
+        total_transaksi=Count('id'),
+        total_pendapatan=Sum('total_biaya'),
+        total_lunas=Sum(Case(When(status_pembayaran='Lunas', then='total_biaya'))),
+        total_belum_lunas=Sum(Case(When(status_pembayaran='Belum Lunas', then='total_biaya'))),
+    )
     
-    # Chart Data - Transaksi per hari (last 7 days)
     today = datetime.now().date()
+    week_ago = today - timedelta(days=6)
+    
+    # Chart Data - Daily transactions (single query with grouping)
+    daily_data = Transaksi.objects.filter(
+        tanggal_masuk__date__gte=week_ago
+    ).annotate(
+        day=TruncDate('tanggal_masuk')
+    ).values('day').annotate(
+        count=Count('id')
+    ).order_by('day')
+    
+    daily_dict = {item['day']: item['count'] for item in daily_data}
     last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    
-    daily_transactions = []
-    for day in last_7_days:
-        count = Transaksi.objects.filter(tanggal_masuk__date=day).count()
-        daily_transactions.append(count)
-    
+    daily_transactions = [daily_dict.get(day, 0) for day in last_7_days]
     chart_labels_daily = [day.strftime('%d %b') for day in last_7_days]
     
-    # Chart Data - Pendapatan per bulan (last 6 months)
-    monthly_revenue = []
-    chart_labels_monthly = []
+    # Chart Data - Monthly revenue (single query with grouping)
+    six_months_ago = today.replace(day=1) - timedelta(days=150)
+    monthly_data = Transaksi.objects.filter(
+        tanggal_masuk__date__gte=six_months_ago
+    ).annotate(
+        month=TruncMonth('tanggal_masuk')
+    ).values('month').annotate(
+        revenue=Sum('total_biaya')
+    ).order_by('month')
     
+    monthly_dict = {item['month'].date() if item['month'] else None: float(item['revenue'] or 0) for item in monthly_data}
+    
+    # Build last 6 months labels
+    chart_labels_monthly = []
+    monthly_revenue = []
     for i in range(5, -1, -1):
         month_date = today - timedelta(days=30*i)
         month_start = month_date.replace(day=1)
-        
-        if month_date.month == 12:
-            month_end = month_date.replace(day=31)
-        else:
-            next_month = month_date.replace(month=month_date.month + 1, day=1)
-            month_end = next_month - timedelta(days=1)
-        
-        revenue = Transaksi.objects.filter(
-            tanggal_masuk__date__gte=month_start,
-            tanggal_masuk__date__lte=month_end
-        ).aggregate(total=Sum('total_biaya'))['total'] or 0
-        
-        monthly_revenue.append(float(revenue))
         chart_labels_monthly.append(month_date.strftime('%B'))
+        monthly_revenue.append(monthly_dict.get(month_start, 0))
     
     # Get all layanan for filter
     all_layanan = Layanan.objects.all()
     
     # Pagination
-    paginator = Paginator(transaksi_list.order_by('-tanggal_masuk'), 10)  # 10 items per page
+    paginator = Paginator(transaksi_list.order_by('-tanggal_masuk'), 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'page_obj': page_obj,
-        'total_transaksi': total_transaksi,
-        'total_pendapatan': total_pendapatan,
-        'total_lunas': total_lunas,
-        'total_belum_lunas': total_belum_lunas,
+        'total_transaksi': stats['total_transaksi'] or 0,
+        'total_pendapatan': stats['total_pendapatan'] or 0,
+        'total_lunas': stats['total_lunas'] or 0,
+        'total_belum_lunas': stats['total_belum_lunas'] or 0,
         'tanggal_dari': tanggal_dari,
         'status_filter': status_filter,
         'pembayaran_filter': pembayaran_filter,

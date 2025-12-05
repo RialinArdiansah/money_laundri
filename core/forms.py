@@ -27,7 +27,7 @@ class PelangganForm(forms.ModelForm):
         fields = ['nama_pelanggan', 'nomor_handphone', 'alamat']
         labels = {
             'nama_pelanggan': 'Nama Lengkap',
-            'nomor_handphone': 'Nomor Handphone',
+            'nomor_handphone': 'Nomor HP',
             'alamat': 'Alamat',
         }
         widgets = {
@@ -37,7 +37,7 @@ class PelangganForm(forms.ModelForm):
             }),
             'nomor_handphone': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Masukkan nomor handphone'
+                'placeholder': 'Masukkan nomor HP'
             }),
             'alamat': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
@@ -55,18 +55,18 @@ class PelangganForm(forms.ModelForm):
     def clean_nomor_handphone(self):
         nomor = self.cleaned_data.get('nomor_handphone')
         if not nomor.isdigit():
-            raise forms.ValidationError('Nomor handphone hanya boleh angka')
+            raise forms.ValidationError('Nomor HP hanya boleh angka')
         if len(nomor) < 10 or len(nomor) > 13:
-            raise forms.ValidationError('Nomor handphone harus 10-13 digit')
+            raise forms.ValidationError('Nomor HP harus 10-13 digit')
         
         if self.instance.pk:
             if Pelanggan.objects.exclude(pk=self.instance.pk).filter(nomor_handphone=nomor).exists():
                 pelanggan_lama = Pelanggan.objects.exclude(pk=self.instance.pk).filter(nomor_handphone=nomor).first()
-                raise forms.ValidationError(f'Nomor handphone sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
+                raise forms.ValidationError(f'Nomor HP sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
         else:
             if Pelanggan.objects.filter(nomor_handphone=nomor).exists():
                 pelanggan_lama = Pelanggan.objects.filter(nomor_handphone=nomor).first()
-                raise forms.ValidationError(f'Nomor handphone sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
+                raise forms.ValidationError(f'Nomor HP sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
         
         return nomor
 
@@ -209,7 +209,7 @@ class TransaksiForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
                 'placeholder': 'Masukkan berat dalam kg',
                 'step': '0.01',
-                'min': '0.01'
+                'min': '1'
             }),
             'tanggal_estimasi_selesai': forms.DateInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
@@ -221,23 +221,58 @@ class TransaksiForm(forms.ModelForm):
                 'rows': 3
             }),
         }
+        error_messages = {
+            'id_pelanggan': {
+                'required': 'Silakan pilih pelanggan terlebih dahulu.',
+                'invalid_choice': 'Pelanggan tidak valid. Silakan pilih pelanggan dari daftar.',
+            },
+            'jenis_layanan': {
+                'required': 'Silakan pilih layanan terlebih dahulu.',
+                'invalid_choice': 'Layanan tidak valid. Silakan pilih layanan dari daftar.',
+            },
+            'berat_cucian': {
+                'required': 'Berat cucian harus diisi.',
+                'invalid': 'Berat cucian harus berupa angka.',
+                'min_value': 'Berat cucian minimal 1 kg.',
+            },
+            'tanggal_estimasi_selesai': {
+                'required': 'Tanggal estimasi selesai harus diisi.',
+                'invalid': 'Format tanggal tidak valid.',
+            },
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.instance.pk:
             self.fields['tanggal_estimasi_selesai'].initial = date.today() + timedelta(days=2)
     
-    def clean_berat_cucian(self):
-        berat = self.cleaned_data.get('berat_cucian')
-        if berat and berat < 1:
-            raise forms.ValidationError('Berat cucian minimal 1 kg')
-        return berat
+    def clean_id_pelanggan(self):
+        pelanggan = self.cleaned_data.get('id_pelanggan')
+        if not pelanggan:
+            raise forms.ValidationError('Silakan pilih pelanggan terlebih dahulu.')
+        return pelanggan
     
     def clean_jenis_layanan(self):
         layanan = self.cleaned_data.get('jenis_layanan')
         if not layanan:
-            raise forms.ValidationError('Pilih layanan dahulu')
+            raise forms.ValidationError('Silakan pilih layanan terlebih dahulu.')
         return layanan
+    
+    def clean_berat_cucian(self):
+        berat = self.cleaned_data.get('berat_cucian')
+        if berat is None:
+            raise forms.ValidationError('Berat cucian harus diisi.')
+        if berat < 1:
+            raise forms.ValidationError('Berat cucian minimal 1 kg.')
+        return berat
+    
+    def clean_tanggal_estimasi_selesai(self):
+        tanggal = self.cleaned_data.get('tanggal_estimasi_selesai')
+        if not tanggal:
+            raise forms.ValidationError('Tanggal estimasi selesai harus diisi.')
+        if tanggal < date.today():
+            raise forms.ValidationError('Tanggal estimasi selesai tidak boleh di masa lalu.')
+        return tanggal
 
 
 class UpdateStatusForm(forms.Form):

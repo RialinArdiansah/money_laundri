@@ -98,6 +98,12 @@ class Transaksi(models.Model):
         verbose_name = 'Transaksi'
         verbose_name_plural = 'Transaksi'
         ordering = ['-tanggal_masuk']
+        indexes = [
+            models.Index(fields=['-tanggal_masuk']),
+            models.Index(fields=['status']),
+            models.Index(fields=['status_pembayaran']),
+            models.Index(fields=['tanggal_masuk', 'status']),
+        ]
     
     def __str__(self):
         return f"{self.nomor_order} - {self.id_pelanggan.nama_pelanggan}"
