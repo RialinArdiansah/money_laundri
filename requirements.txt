@@ -1,5 +1,12 @@
+# Sistem Manajemen Laundry - Python Dependencies
+# Requires: Python 3.10 or higher (recommended: 3.12)
+# OS Support: Windows, macOS, Linux (Ubuntu, Debian, Fedora, Arch)
+
 Django==4.2.7
 psycopg2-binary==2.9.9
 python-decouple==3.8
 Pillow==10.1.0
 whitenoise==6.6.0
+
+# Optional: untuk production dengan Gunicorn (Linux/macOS)
+# gunicorn==21.2.0
