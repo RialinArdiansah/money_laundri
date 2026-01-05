@@ -1,0 +1,16 @@
+{
+  "name": "laundry-project",
+  "version": "1.0.0",
+  "description": "Sistem manajemen laundry lengkap dengan Django backend, Tailwind CSS frontend, dan PostgreSQL Supabase sebagai database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "tailwindcss": "^4.1.18"
+  }
+}

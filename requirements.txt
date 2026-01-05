@@ -1,0 +1,18 @@
+# Sistem Manajemen Laundry - Python Dependencies
+# Requires: Python 3.10 or higher (recommended: 3.12)
+# OS Support: Windows, macOS, Linux (Ubuntu, Debian, Fedora, Arch)
+
+Django==4.2.7
+python-decouple==3.8
+whitenoise==6.6.0
+
+# PostgreSQL driver
+# Catatan: Pada Python versi terbaru (mis. 3.13/3.14), beberapa paket lama sering tidak punya wheel
+# sehingga pip mencoba build dari source (sering gagal di Windows/macOS).
+# - psycopg2-binary: stabil untuk Python <= 3.12 (wheel umumnya tersedia)
+# - psycopg[binary]: lebih kompatibel untuk Python >= 3.13 (disarankan untuk Python terbaru)
+psycopg2-binary==2.9.9; python_version < "3.13"
+psycopg[binary]>=3.2.0; python_version >= "3.13"
+
+# Optional: untuk production dengan Gunicorn (Linux/macOS)
+# gunicorn==21.2.0

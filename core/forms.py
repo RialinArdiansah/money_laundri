@@ -1,0 +1,309 @@
+from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .models import Akun, Karyawan, Pelanggan, Transaksi, Layanan
+from datetime import date, timedelta
+
+
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(
+        label='Username',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+            'placeholder': 'Masukkan username'
+        })
+    )
+    password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+            'placeholder': 'Masukkan password'
+        })
+    )
+
+
+class PelangganForm(forms.ModelForm):
+    class Meta:
+        model = Pelanggan
+        fields = ['nama_pelanggan', 'nomor_handphone', 'alamat']
+        labels = {
+            'nama_pelanggan': 'Nama Lengkap',
+            'nomor_handphone': 'Nomor HP',
+            'alamat': 'Alamat',
+        }
+        widgets = {
+            'nama_pelanggan': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan nama lengkap'
+            }),
+            'nomor_handphone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan nomor HP'
+            }),
+            'alamat': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan alamat (opsional)',
+                'rows': 3
+            }),
+        }
+    
+    def clean_nama_pelanggan(self):
+        nama = self.cleaned_data.get('nama_pelanggan')
+        if not nama or len(nama.strip()) < 3:
+            raise forms.ValidationError('Nama lengkap tidak boleh kosong')
+        return nama
+    
+    def clean_nomor_handphone(self):
+        nomor = self.cleaned_data.get('nomor_handphone')
+        if not nomor.isdigit():
+            raise forms.ValidationError('Nomor HP hanya boleh angka')
+        if len(nomor) < 10 or len(nomor) > 13:
+            raise forms.ValidationError('Nomor HP harus 10-13 digit')
+        
+        if self.instance.pk:
+            if Pelanggan.objects.exclude(pk=self.instance.pk).filter(nomor_handphone=nomor).exists():
+                pelanggan_lama = Pelanggan.objects.exclude(pk=self.instance.pk).filter(nomor_handphone=nomor).first()
+                raise forms.ValidationError(f'Nomor HP sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
+        else:
+            if Pelanggan.objects.filter(nomor_handphone=nomor).exists():
+                pelanggan_lama = Pelanggan.objects.filter(nomor_handphone=nomor).first()
+                raise forms.ValidationError(f'Nomor HP sudah digunakan oleh pelanggan {pelanggan_lama.nama_pelanggan}.')
+        
+        return nomor
+
+
+class KaryawanForm(forms.ModelForm):
+    username = forms.CharField(
+        label='Username',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan username untuk login'
+        })
+    )
+    password = forms.CharField(
+        label='Password',
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan password (minimal 6 karakter)'
+        })
+    )
+    peran = forms.ChoiceField(
+        label='Jabatan',
+        choices=Akun.PERAN_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+        })
+    )
+    
+    class Meta:
+        model = Karyawan
+        fields = ['nama', 'alamat', 'nomor_hp']
+        labels = {
+            'nama': 'Nama',
+            'alamat': 'Alamat',
+            'nomor_hp': 'Nomor HP',
+        }
+        widgets = {
+            'nama': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan nama lengkap'
+            }),
+            'alamat': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan alamat',
+                'rows': 3
+            }),
+            'nomor_hp': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan nomor HP'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and self.instance.akun:
+            self.fields['username'].initial = self.instance.akun.username
+            self.fields['peran'].initial = self.instance.akun.peran
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        akun_id = self.instance.akun.id if self.instance.pk and self.instance.akun else None
+        if akun_id:
+            if Akun.objects.exclude(pk=akun_id).filter(username=username).exists():
+                raise forms.ValidationError('Username sudah digunakan')
+        else:
+            if Akun.objects.filter(username=username).exists():
+                raise forms.ValidationError('Username sudah digunakan')
+        return username
+    
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if not self.instance.pk and not password:
+            raise forms.ValidationError('Password harus diisi untuk karyawan baru')
+        if password and len(password) < 6:
+            raise forms.ValidationError('Password minimal 6 karakter')
+        return password
+    
+    def clean_nomor_hp(self):
+        nomor = self.cleaned_data.get('nomor_hp')
+        if not nomor.isdigit():
+            raise forms.ValidationError('Nomor HP hanya boleh angka')
+        if len(nomor) < 10 or len(nomor) > 13:
+            raise forms.ValidationError('Nomor HP harus 10-13 digit')
+        return nomor
+    
+    def save(self, commit=True):
+        karyawan = super().save(commit=False)
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        peran = self.cleaned_data.get('peran')
+        
+        if self.instance.pk and self.instance.akun:
+            akun = self.instance.akun
+            akun.username = username
+            akun.peran = peran
+            if password:
+                akun.set_password(password)
+            akun.save()
+        else:
+            akun = Akun(username=username, peran=peran)
+            akun.set_password(password)
+            akun.save()
+            karyawan.akun = akun
+        
+        if commit:
+            karyawan.save()
+        return karyawan
+
+
+class TransaksiForm(forms.ModelForm):
+    pelanggan_search = forms.CharField(
+        required=False,
+        label='Pencarian Pelanggan',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Cari nama atau nomor HP pelanggan',
+            'id': 'pelanggan-search'
+        })
+    )
+    
+    class Meta:
+        model = Transaksi
+        fields = ['id_pelanggan', 'jenis_layanan', 'berat_cucian', 'tanggal_estimasi_selesai', 'catatan']
+        labels = {
+            'id_pelanggan': 'Pelanggan',
+            'jenis_layanan': 'Jenis Layanan',
+            'berat_cucian': 'Berat (Kg)',
+            'tanggal_estimasi_selesai': 'Tanggal Estimasi Selesai',
+            'catatan': 'Catatan Tambahan',
+        }
+        widgets = {
+            'id_pelanggan': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'id': 'pelanggan-select'
+            }),
+            'jenis_layanan': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+            }),
+            'berat_cucian': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Masukkan berat dalam kg',
+                'step': '0.01',
+                'min': '1'
+            }),
+            'tanggal_estimasi_selesai': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'type': 'date'
+            }),
+            'catatan': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Catatan tambahan (opsional)',
+                'rows': 3
+            }),
+        }
+        error_messages = {
+            'id_pelanggan': {
+                'required': 'Silakan pilih pelanggan terlebih dahulu.',
+                'invalid_choice': 'Pelanggan tidak valid. Silakan pilih pelanggan dari daftar.',
+            },
+            'jenis_layanan': {
+                'required': 'Silakan pilih layanan terlebih dahulu.',
+                'invalid_choice': 'Layanan tidak valid. Silakan pilih layanan dari daftar.',
+            },
+            'berat_cucian': {
+                'required': 'Berat cucian harus diisi.',
+                'invalid': 'Berat cucian harus berupa angka.',
+                'min_value': 'Berat cucian minimal 1 kg.',
+            },
+            'tanggal_estimasi_selesai': {
+                'required': 'Tanggal estimasi selesai harus diisi.',
+                'invalid': 'Format tanggal tidak valid.',
+            },
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields['tanggal_estimasi_selesai'].initial = date.today() + timedelta(days=2)
+    
+    def clean_id_pelanggan(self):
+        pelanggan = self.cleaned_data.get('id_pelanggan')
+        if not pelanggan:
+            raise forms.ValidationError('Silakan pilih pelanggan terlebih dahulu.')
+        return pelanggan
+    
+    def clean_jenis_layanan(self):
+        layanan = self.cleaned_data.get('jenis_layanan')
+        if not layanan:
+            raise forms.ValidationError('Silakan pilih layanan terlebih dahulu.')
+        return layanan
+    
+    def clean_berat_cucian(self):
+        berat = self.cleaned_data.get('berat_cucian')
+        if berat is None:
+            raise forms.ValidationError('Berat cucian harus diisi.')
+        if berat < 1:
+            raise forms.ValidationError('Berat cucian minimal 1 kg.')
+        return berat
+    
+    def clean_tanggal_estimasi_selesai(self):
+        tanggal = self.cleaned_data.get('tanggal_estimasi_selesai')
+        if not tanggal:
+            raise forms.ValidationError('Tanggal estimasi selesai harus diisi.')
+        if tanggal < date.today():
+            raise forms.ValidationError('Tanggal estimasi selesai tidak boleh di masa lalu.')
+        return tanggal
+
+
+class UpdateStatusForm(forms.Form):
+    STATUS_CHOICES = [
+        ('Diterima', 'Diterima'),
+        ('Proses', 'Proses'),
+        ('Selesai', 'Selesai'),
+        ('Sudah Diambil', 'Sudah Diambil'),
+    ]
+    
+    status = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        label='Status Pesanan',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+        })
+    )
+
+
+class CekStatusForm(forms.Form):
+    nomor_order = forms.CharField(
+        label='Nomor Order',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan nomor order'
+        })
+    )
+    nomor_telepon = forms.CharField(
+        label='Nomor Telepon',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Masukkan nomor telepon'
+        })
+    )

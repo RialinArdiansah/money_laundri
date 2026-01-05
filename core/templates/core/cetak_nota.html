@@ -1,0 +1,372 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Nota Transaksi - {{ transaksi.nomor_order }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-8 print:py-0">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg print:max-w-full" id="nota">
+        <div class="nota-content">
+            <div class="text-center mb-6 border-b-2 border-gray-300 pb-4 print:mb-4 print:pb-3">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2 print:text-2xl print:mb-1">NOTA TRANSAKSI</h1>
+                <h2 class="text-xl font-semibold text-blue-600 print:text-lg">Money Laundry</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6 print:mb-3">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Nomor Order</p>
+                <p class="text-lg font-bold text-gray-900 print:text-base">{{ transaksi.nomor_order }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Tanggal Diterima</p>
+                <p class="text-lg font-semibold text-gray-900 print:text-base">{{ transaksi.tanggal_masuk|date:"d F Y, H:i" }}</p>
+            </div>
+        </div>
+        
+        <div class="mb-6 print:mb-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-2 print:mb-2 print:pb-1">Informasi Pelanggan</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Nama Pelanggan</p>
+                    <p class="font-semibold text-gray-900">{{ transaksi.id_pelanggan.nama_pelanggan }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-sm text-gray-600">Nomor HP</p>
+                    <p class="font-semibold text-gray-900">{{ transaksi.id_pelanggan.nomor_handphone }}</p>
+                </div>
+                
+                <div class="col-span-2">
+                    <p class="text-sm text-gray-600">Alamat</p>
+                    <p class="font-semibold text-gray-900">{{ transaksi.id_pelanggan.alamat|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-6 print:mb-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-2 print:mb-2 print:pb-1">Detail Layanan</h3>
+            <table class="w-full text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2 text-left print:px-2 print:py-1">Jenis Layanan</th>
+                        <th class="px-4 py-2 text-right print:px-2 print:py-1">Berat</th>
+                        <th class="px-4 py-2 text-right print:px-2 print:py-1">Harga/Kg</th>
+                        <th class="px-4 py-2 text-right print:px-2 print:py-1">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b">
+                        <td class="px-4 py-3 print:px-2 print:py-2">{{ transaksi.jenis_layanan.nama_layanan }}</td>
+                        <td class="px-4 py-3 text-right print:px-2 print:py-2">{{ transaksi.berat_cucian }} kg</td>
+                        <td class="px-4 py-3 text-right print:px-2 print:py-2">Rp {{ transaksi.jenis_layanan.harga_per_kg|floatformat:0 }}</td>
+                        <td class="px-4 py-3 text-right font-semibold print:px-2 print:py-2">Rp {{ transaksi.total_biaya|floatformat:0 }}</td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="3" class="px-4 py-3 text-right font-bold print:px-2 print:py-2">TOTAL BIAYA:</td>
+                        <td class="px-4 py-3 text-right font-bold text-xl text-blue-600 print:px-2 print:py-2 print:text-lg">Rp {{ transaksi.total_biaya|floatformat:0 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-6 print:mb-3">
+            <div>
+                <p class="text-sm text-gray-600">Estimasi Selesai</p>
+                <p class="font-semibold text-gray-900">{{ transaksi.tanggal_estimasi_selesai|date:"d F Y" }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600">Status Pesanan</p>
+                <p class="font-semibold text-gray-900">{{ transaksi.status }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600">Status Pembayaran</p>
+                <p class="font-semibold {% if transaksi.status_pembayaran == 'Lunas' %}text-green-600{% else %}text-red-600{% endif %}">
+                    {{ transaksi.status_pembayaran }}
+                </p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600">Tanggal Cetak</p>
+                <p class="font-semibold text-gray-900">{{ tanggal_cetak|date:"d F Y, H:i" }}</p>
+            </div>
+        </div>
+        
+            {% if transaksi.catatan %}
+            <div class="mb-4 print:mb-2">
+                <p class="text-sm text-gray-600 mb-1">Catatan</p>
+                <p class="text-gray-900 text-sm">{{ transaksi.catatan }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="cara-cek-status mt-6 pt-4 border-t border-gray-300 print:mt-4 print:pt-3">
+            <h3 class="text-lg font-bold text-gray-900 mb-3 text-center print:mb-2">Cara Cek Status Cucian</h3>
+            <div class="bg-blue-50 p-4 rounded-lg print:p-3">
+                <div class="space-y-2 print:space-y-1">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 print:w-5 print:h-5 print:mr-2">
+                            1
+                        </div>
+                        <p class="text-sm text-gray-700 flex-1 pt-0.5">Buka website atau aplikasi Sistem Manajemen Laundry</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 print:w-5 print:h-5 print:mr-2">
+                            2
+                        </div>
+                        <p class="text-sm text-gray-700 flex-1 pt-0.5">Pilih menu "Cek Status Laundry"</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 print:w-5 print:h-5 print:mr-2">
+                            3
+                        </div>
+                        <p class="text-sm text-gray-700 flex-1 pt-0.5">Masukkan <span class="font-semibold">Nomor Order</span> dan <span class="font-semibold">Nomor Telepon</span> Anda</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 print:w-5 print:h-5 print:mr-2">
+                            4
+                        </div>
+                        <p class="text-sm text-gray-700 flex-1 pt-0.5">Klik "Cek Status" untuk melihat progres cucian Anda</p>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-blue-200 print:mt-2 print:pt-2">
+                    <p class="text-xs text-gray-600 text-center">
+                        <span class="font-semibold">Nomor Order Anda:</span> <span class="text-blue-700 font-bold">{{ transaksi.nomor_order }}</span>
+                    </p>
+                    <p class="text-xs text-gray-600 text-center mt-1">
+                        <span class="font-semibold">Nomor Telepon:</span> {{ transaksi.id_pelanggan.nomor_handphone }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nota-footer mt-6 pt-4 border-t-2 border-gray-300 text-center text-sm text-gray-600 print:mt-3 print:pt-2">
+            <p class="mb-1 print:mb-0">Terima kasih atas kepercayaan Anda</p>
+            <p class="text-xs">Simpan nota ini sebagai bukti transaksi</p>
+        </div>
+    </div>
+    
+    <div class="max-w-3xl mx-auto mt-6 text-center">
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 mr-4 print:hidden">
+            Cetak Nota
+        </button>
+        <a href="{% url 'detail_transaksi' transaksi.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 inline-block print:hidden">
+            Kembali
+        </a>
+    </div>
+</div>
+
+<style>
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0.8cm 1.2cm 0.5cm 1.2cm;
+    }
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    html, body {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+    }
+    
+    .print\:hidden {
+        display: none !important;
+    }
+    
+    .print\:py-0 {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .print\:max-w-full {
+        max-width: 100% !important;
+    }
+    
+    .min-h-screen {
+        min-height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+    
+    #nota {
+        padding: 1rem !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+    
+    .print\:mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .print\:pb-3 {
+        padding-bottom: 0.6rem !important;
+    }
+    
+    .print\:text-2xl {
+        font-size: 1.4rem !important;
+    }
+    
+    .print\:mb-1 {
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .print\:text-lg {
+        font-size: 1.1rem !important;
+    }
+    
+    .print\:mb-3 {
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .print\:text-base {
+        font-size: 0.95rem !important;
+    }
+    
+    .print\:mb-2 {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .print\:pb-1 {
+        padding-bottom: 0.3rem !important;
+    }
+    
+    .print\:px-2 {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    
+    .print\:py-1 {
+        padding-top: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+    }
+    
+    .print\:py-2 {
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+    
+    .print\:mt-3 {
+        margin-top: auto !important;
+        padding-top: 1.5rem !important;
+    }
+    
+    .print\:pt-2 {
+        padding-top: 0.75rem !important;
+    }
+    
+    .print\:mb-0 {
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .text-sm {
+        font-size: 0.875rem !important;
+    }
+    
+    .text-xs {
+        font-size: 0.75rem !important;
+    }
+    
+    .nota-content {
+        flex: 1;
+    }
+    
+    .cara-cek-status {
+        page-break-inside: avoid;
+    }
+    
+    .print\:mt-4 {
+        margin-top: 0.75rem !important;
+    }
+    
+    .print\:pt-3 {
+        padding-top: 0.5rem !important;
+    }
+    
+    .print\:p-3 {
+        padding: 0.5rem !important;
+    }
+    
+    .print\:space-y-1 > * + * {
+        margin-top: 0.25rem !important;
+    }
+    
+    .print\:w-5 {
+        width: 1.15rem !important;
+    }
+    
+    .print\:h-5 {
+        height: 1.15rem !important;
+    }
+    
+    .print\:mr-2 {
+        margin-right: 0.4rem !important;
+    }
+    
+    .nota-footer {
+        margin-top: auto !important;
+    }
+    
+    table {
+        page-break-inside: avoid;
+    }
+    
+    thead {
+        display: table-header-group;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+    }
+    
+    .bg-gray-100,
+    .bg-gray-50 {
+        background-color: #f3f4f6 !important;
+    }
+    
+    .bg-blue-50 {
+        background-color: #eff6ff !important;
+    }
+    
+    .bg-blue-600 {
+        background-color: #2563eb !important;
+    }
+    
+    .border-gray-300 {
+        border-color: #d1d5db !important;
+    }
+    
+    .border-blue-200 {
+        border-color: #bfdbfe !important;
+    }
+    
+    .text-blue-700 {
+        color: #1d4ed8 !important;
+    }
+    
+    .rounded-lg {
+        border-radius: 0.5rem !important;
+    }
+    
+    .rounded-full {
+        border-radius: 9999px !important;
+    }
+}
+</style>
+{% endblock %}

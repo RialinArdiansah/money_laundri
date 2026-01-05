@@ -1,0 +1,386 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Order Laundry - Money Laundry{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Order Laundry Baru</h1>
+        <p class="text-slate-600 mt-2">Buat pesanan laundry baru untuk pelanggan</p>
+    </div>
+    <div class="card">
+        <form method="post" id="order-form" novalidate>
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="form-label">
+                        Pencarian Pelanggan
+                    </label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="pelanggan-search" class="form-input pl-10" placeholder="Cari nama atau nomor HP pelanggan" autocomplete="off">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-pelanggan-baru" class="btn-success whitespace-nowrap flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Pelanggan Baru
+                        </button>
+                    </div>
+                    <div id="pelanggan-suggestions" class="mt-2 bg-white border border-slate-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-20 absolute w-full max-w-md"></div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.id_pelanggan.id_for_label }}" class="form-label">
+                        Pelanggan Terpilih <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.id_pelanggan }}
+                    <p id="error-pelanggan" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.jenis_layanan.id_for_label }}" class="form-label">
+                            Jenis Layanan <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.jenis_layanan }}
+                        <p id="error-layanan" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.berat_cucian.id_for_label }}" class="form-label">
+                            Berat (Kg) / Jumlah <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.berat_cucian }}
+                        <p id="error-berat" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                    <label class="block text-sm font-medium text-blue-900 mb-1">
+                        Total Biaya Estimasi
+                    </label>
+                    <div id="total-biaya" class="text-3xl font-bold text-blue-700">Rp 0</div>
+                </div>
+                
+                <div>
+                    <label for="{{ form.tanggal_estimasi_selesai.id_for_label }}" class="form-label">
+                        Tanggal Estimasi Selesai <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.tanggal_estimasi_selesai }}
+                    <p id="error-tanggal" class="mt-1 text-sm text-red-600 hidden"></p>
+                </div>
+                
+                <div>
+                    <label for="{{ form.catatan.id_for_label }}" class="form-label">
+                        Catatan Tambahan
+                    </label>
+                    {{ form.catatan }}
+                </div>
+                
+                <div class="flex gap-4 pt-4 border-t border-slate-100">
+                    <button type="submit" class="btn-primary flex-1 md:flex-none md:w-48">
+                        Simpan Order
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn-secondary flex-1 md:flex-none md:w-32">
+                        Batal
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-pelanggan-baru" class="hidden fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
+    <div class="card max-w-md w-full mx-4 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-900">Tambah Pelanggan Baru</h3>
+            <button type="button" id="btn-close-modal" class="text-slate-400 hover:text-slate-500">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="form-pelanggan-baru">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama_pelanggan" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label">Nomor HP <span class="text-red-500">*</span></label>
+                    <input type="text" name="nomor_handphone" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label">Alamat (Opsional)</label>
+                    <textarea name="alamat" rows="3" class="form-input"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 btn-primary">
+                        Simpan
+                    </button>
+                    <button type="button" id="btn-batal-pelanggan" class="flex-1 btn-secondary">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('pelanggan-search');
+    const suggestionsDiv = document.getElementById('pelanggan-suggestions');
+    const pelangganSelect = document.getElementById('{{ form.id_pelanggan.id_for_label }}');
+    const layananSelect = document.getElementById('{{ form.jenis_layanan.id_for_label }}');
+    const beratInput = document.getElementById('{{ form.berat_cucian.id_for_label }}');
+    const tanggalInput = document.getElementById('{{ form.tanggal_estimasi_selesai.id_for_label }}');
+    const totalBiayaDiv = document.getElementById('total-biaya');
+    const modalPelanggan = document.getElementById('modal-pelanggan-baru');
+    const btnPelangganBaru = document.getElementById('btn-pelanggan-baru');
+    const btnBatalPelanggan = document.getElementById('btn-batal-pelanggan');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const formPelangganBaru = document.getElementById('form-pelanggan-baru');
+    const orderForm = document.getElementById('order-form');
+    
+    // Error elements
+    const errorPelanggan = document.getElementById('error-pelanggan');
+    const errorLayanan = document.getElementById('error-layanan');
+    const errorBerat = document.getElementById('error-berat');
+    const errorTanggal = document.getElementById('error-tanggal');
+    
+    let currentHargaPerKg = 0;
+    
+    // Helper function to show error
+    function showError(element, field, message) {
+        element.textContent = message;
+        element.classList.remove('hidden');
+        field.classList.add('border-red-500');
+        field.classList.remove('border-gray-300');
+    }
+    
+    // Helper function to clear error
+    function clearError(element, field) {
+        element.textContent = '';
+        element.classList.add('hidden');
+        field.classList.remove('border-red-500');
+        field.classList.add('border-gray-300');
+    }
+    
+    // Clear all errors
+    function clearAllErrors() {
+        clearError(errorPelanggan, pelangganSelect);
+        clearError(errorLayanan, layananSelect);
+        clearError(errorBerat, beratInput);
+        clearError(errorTanggal, tanggalInput);
+    }
+    
+    // Validate form
+    function validateForm() {
+        let isValid = true;
+        clearAllErrors();
+        
+        // Validate pelanggan
+        if (!pelangganSelect.value) {
+            showError(errorPelanggan, pelangganSelect, 'Silakan pilih pelanggan terlebih dahulu.');
+            isValid = false;
+        }
+        
+        // Validate layanan
+        if (!layananSelect.value) {
+            showError(errorLayanan, layananSelect, 'Silakan pilih layanan terlebih dahulu.');
+            isValid = false;
+        }
+        
+        // Validate berat
+        const berat = parseFloat(beratInput.value);
+        if (!beratInput.value || isNaN(berat)) {
+            showError(errorBerat, beratInput, 'Berat cucian harus diisi.');
+            isValid = false;
+        } else if (berat < 1) {
+            showError(errorBerat, beratInput, 'Berat cucian minimal 1 kg.');
+            isValid = false;
+        }
+        
+        // Validate tanggal
+        if (!tanggalInput.value) {
+            showError(errorTanggal, tanggalInput, 'Tanggal estimasi selesai harus diisi.');
+            isValid = false;
+        } else {
+            const selectedDate = new Date(tanggalInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                showError(errorTanggal, tanggalInput, 'Tanggal estimasi selesai tidak boleh di masa lalu.');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Form submission validation
+    orderForm.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = document.querySelector('.text-red-600:not(.hidden)');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    // Clear error on input change
+    pelangganSelect.addEventListener('change', function() {
+        if (this.value) clearError(errorPelanggan, pelangganSelect);
+    });
+    
+    layananSelect.addEventListener('change', function() {
+        if (this.value) clearError(errorLayanan, layananSelect);
+        // Also fetch price
+        const layananId = this.value;
+        if (layananId) {
+            fetch(`/get-layanan-harga/${layananId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    currentHargaPerKg = parseFloat(data.harga_per_kg);
+                    calculateTotal();
+                });
+        }
+    });
+    
+    beratInput.addEventListener('input', function() {
+        const berat = parseFloat(this.value);
+        if (this.value && !isNaN(berat) && berat >= 1) {
+            clearError(errorBerat, beratInput);
+        }
+        calculateTotal();
+    });
+    
+    tanggalInput.addEventListener('change', function() {
+        if (this.value) {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate >= today) {
+                clearError(errorTanggal, tanggalInput);
+            }
+        }
+    });
+    
+    // Enhance default select styling
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.classList.add('form-input');
+    });
+    
+    // Enhance default input styling
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], textarea');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-input')) {
+            input.classList.add('form-input');
+        }
+    });
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value;
+        if (query.length >= 2) {
+            fetch(`/search-pelanggan/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results.length > 0) {
+                        suggestionsDiv.innerHTML = data.results.map(p => 
+                            `<div class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors" data-id="${p.id}" data-nama="${p.nama}" data-hp="${p.nomor_hp}">
+                                <div class="font-medium text-slate-800">${p.nama}</div>
+                                <div class="text-sm text-slate-500">${p.nomor_hp}</div>
+                            </div>`
+                        ).join('');
+                        suggestionsDiv.classList.remove('hidden');
+                        
+                        suggestionsDiv.querySelectorAll('div[data-id]').forEach(div => {
+                            div.addEventListener('click', function() {
+                                pelangganSelect.value = this.dataset.id;
+                                searchInput.value = this.dataset.nama + ' - ' + this.dataset.hp;
+                                suggestionsDiv.classList.add('hidden');
+                                clearError(errorPelanggan, pelangganSelect);
+                            });
+                        });
+                    } else {
+                        suggestionsDiv.classList.add('hidden');
+                    }
+                });
+        } else {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            suggestionsDiv.classList.add('hidden');
+        }
+    });
+    
+    function calculateTotal() {
+        const berat = parseFloat(beratInput.value) || 0;
+        const total = currentHargaPerKg * berat;
+        totalBiayaDiv.textContent = 'Rp ' + total.toLocaleString('id-ID');
+    }
+    
+    function closeModal() {
+        modalPelanggan.classList.add('hidden');
+        formPelangganBaru.reset();
+    }
+    
+    btnPelangganBaru.addEventListener('click', function() {
+        modalPelanggan.classList.remove('hidden');
+    });
+    
+    btnBatalPelanggan.addEventListener('click', closeModal);
+    if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+    
+    // Close modal on outside click
+    modalPelanggan.addEventListener('click', function(e) {
+        if (e.target === modalPelanggan) {
+            closeModal();
+        }
+    });
+    
+    formPelangganBaru.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('/tambah-pelanggan-ajax/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const option = new Option(data.pelanggan.nama, data.pelanggan.id, true, true);
+                pelangganSelect.add(option);
+                searchInput.value = data.pelanggan.nama + ' - ' + data.pelanggan.nomor_hp;
+                closeModal();
+                clearError(errorPelanggan, pelangganSelect);
+            } else {
+                alert(data.errors.join('\n'));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
